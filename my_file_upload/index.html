@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Upload files</title>
+    <style type="text/css">
+    .inputfile {
+      	width: 0.1px;
+      	height: 0.1px;
+      	opacity: 0;
+      	overflow: hidden;
+      	position: absolute;
+      	z-index: -1;
+        cursor: pointer;
+    }
+    .inputfile + label {
+        font-size: 1.25em;
+        font-weight: 700;
+        color: #f1e5e6;
+        background-color: #d3394c;
+        display: block;
+        max-width: 300px;
+        text-align: center;
+        padding: 5px;
+        line-height: 40px;
+        white-space: nowrap;
+    }
+
+    .inputfile:focus + label,
+    .inputfile + label:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+    .icon_upload{
+      width: 30px;
+      height: 30px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    progress[value] {
+      width: 310px;
+      height: 20px;
+      /* Reset the default appearance */
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+
+      background-color: #eee;
+      border-radius: 2px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+    }
+    progress[value]::-webkit-progress-bar {
+      background-color: #eee;
+      border-radius: 2px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+    }
+
+    progress[value]::-webkit-progress-value {
+      background-image:
+    	   -webkit-linear-gradient(-45deg,
+    	                           transparent 33%, rgba(0, 0, 0, .1) 33%,
+    	                           rgba(0,0, 0, .1) 66%, transparent 66%),
+    	   -webkit-linear-gradient(top,
+    	                           rgba(255, 255, 255, .25),
+    	                           rgba(0, 0, 0, .25)),
+    	   -webkit-linear-gradient(left, #09c, #f44);
+
+        border-radius: 2px;
+        background-size: 35px 20px, 100% 100%, 100% 100%;
+    }
+
+    progress[value]::-moz-progress-bar {
+      background-image:
+        -moz-linear-gradient(
+          135deg,
+          transparent 33%,
+          rgba(0, 0, 0, 0.1) 33%,
+          rgba(0, 0, 0, 0.1) 66%,
+          transparent 66%
+        ),
+        -moz-linear-gradient(
+          top,
+          rgba(255, 255, 255, 0.25),
+          rgba(0, 0, 0, 0.25)
+        ),
+        -moz-linear-gradient(
+          left,
+          #09c,
+          #f44
+        );
+
+      border-radius: 2px;
+      background-size: 35px 20px, 100% 100%, 100% 100%;
+    }
+    </style>
+  </head>
+  <body>
+
+    <!-- <form action="https://ahtool.com/grape/get-file/" method="post" enctype="multipart/form-data">
+        Select image to upload:
+        <input type="file" name="fileToUpload">
+        <input type="submit" value="Upload Image" name="submit">
+    </form> -->
+
+    <!-- <form action="https://ahtool.com/grape/get-file/" method="post" enctype="multipart/form-data">
+        <input type="file" name="myfile"><br>
+        <input type="submit" value="Upload File to Server">
+    </form>
+
+    <div class="progress">
+        <div class="bar"></div >
+        <div class="percent">0%</div >
+    </div>
+
+    <div id="status2"></div> -->
+
+
+    <form id="upload_form" enctype="multipart/form-data" method="post">
+      <input class="inputfile" type="file" name="file1" id="file1" onChange='connect()' multiple>
+      <label for="file1"><img class="icon_upload" src="upload.png" alt=""><span>Upload File</span></label>
+      <!-- <input type="button" value="Upload File" onclick="uploadFile()"> -->
+      <progress id="progressBar" value="0" max="100" ></progress>
+      <h3 id="status"></h3>
+      <p id="loaded_n_total"></p>
+    </form>
+
+
+
+    <!-- <input id="fileupload" type="file" name="files[]" data-url="https://ahtool.com/grape/get-file/" multiple>
+    <div id="progress">
+        <div class="bar" style="width: 0%;"></div>
+    </div> -->
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+
+
+    <script>
+      // $(function () {
+      //    var bar = $('.bar');
+      //    var percent = $('.percent');
+      //    var status = $('#status');
+      //
+      //    $('form').ajaxForm({
+      //        beforeSend: function() {
+      //            status.empty();
+      //            var percentVal = '0%';
+      //            bar.width(percentVal);
+      //            percent.html(percentVal);
+      //        },
+      //        uploadProgress: function(event, position, total, percentComplete) {
+      //            var percentVal = percentComplete + '%';
+      //            bar.width(percentVal);
+      //            percent.html(percentVal);
+      //        },
+      //        complete: function(xhr) {
+      //            status.html(xhr.responseText);
+      //        }
+      //    });
+      // });
+
+      function makeFileList(){
+        let file = $('#file1')[0];
+        let len = $('#file1')[0].files.length;
+        let name;
+        var list = document.getElementById('status');
+        $('#status').empty();
+        console.log('change');
+
+        for (let x = 0; x < file.files.length; x++) {
+          name = file.files[0].name;
+          //add to list
+          var li = document.createElement('div');
+          li.innerHTML = 'File ' + (x + 1) + ':  ' + file.files[x].name;
+          list.append(li);
+        }
+
+        if(len===1){
+          $('label span').text(name);
+          if(name.length > 24){
+            $('label span').text(name.slice(0, 24) + '...');
+          }
+        }
+        if(len>1){
+          $('label span').text(len + ' files selected');
+        }
+
+
+      }
+
+      function uploadFile(){
+        let file = $('#file1')[0].files.length;
+        //console.log(file);
+        var formdata = new FormData();
+        //formdata.append("file1", file);
+        for (let x = 0; x < file; x++) {
+          formdata.append("fileToUpload"+x, document.getElementById('file1').files[x]);
+        }
+
+        // Display the key/value pairs
+        //console.log(formdata.getAll('fileToUpload[]'));
+
+
+        $.ajax({
+          xhr: function(){
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", progressHandler, false);
+            //xhr.addEventListener("load", completeHandler, false);
+            xhr.addEventListener("error", errorHandler, false);
+            xhr.addEventListener("abort", abortHandler, false);
+            return xhr;
+          },
+          method: "POST",
+          url: "https://ahtool.com/grape/get-file/",
+          data: formdata,
+          processData: false,  // tell jQuery not to process the data
+          contentType: false,  // tell jQuery not to set contentType
+          success : function(data) {
+            console.log(typeof(data));
+            let d = JSON.parse(data);
+            console.log(d.length);
+            $("#status").text('Files upload succesfully');
+            for(let i =0; i < d.length; i++){
+               //$("#status").text(d[i]);
+               var li = document.createElement('li');
+               li.innerHTML = d[i];
+               $("#status").append(li);
+            }
+         	 $("#progressBar").val(0);
+          }
+        })
+          .done(function( msg ) {
+            console.log(msg);
+          });
+      }
+
+      function connect(){
+        makeFileList();
+        uploadFile();
+      }
+
+      // function uploadFile(){
+      //   var file = document.getElementById('file1').files[0];
+      //   console.log(file);
+      //   var formdata = new FormData();
+      // 	formdata.append("file1", file);
+      // 	var ajax = new XMLHttpRequest();
+      // 	ajax.upload.addEventListener("progress", progressHandler, false);
+      // 	ajax.addEventListener("load", completeHandler, false);
+      // 	ajax.addEventListener("error", errorHandler, false);
+      // 	ajax.addEventListener("abort", abortHandler, false);
+      // 	ajax.open("POST", "https://ahtool.com/grape/get-file/");
+      // 	ajax.send(formdata);
+      // }
+
+      function progressHandler(event){
+      	$("#loaded_n_total").text("Uploaded "+event.loaded+" bytes of "+event.total);
+      	var percent = (event.loaded / event.total) * 100;
+      	$("#progressBar").val(Math.round(percent));
+      	$("#status").text( Math.round(percent)+"% uploaded... please wait");
+      }
+      function completeHandler(event){
+      	$("#status").text(event.target.responseText);
+      	$("#progressBar").val(0);
+      }
+      function errorHandler(event){
+      	$("#status").text("Upload Failed");
+      }
+      function abortHandler(event){
+      	$("#status").text("Upload Aborted");
+      }
+    </script>
+
+
+  </body>
+</html>
